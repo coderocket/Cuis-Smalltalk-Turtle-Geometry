@@ -1,6 +1,6 @@
-'From Cuis 5.0 [latest update: #4024] on 17 February 2020 at 3:18:34 pm'!
+'From Cuis 5.0 [latest update: #4024] on 20 February 2020 at 11:42:59 am'!
 'Description Turtle geometry operations on a two dimensional plane'!
-!provides: 'Turtle-Geometry' 1 2!
+!provides: 'Turtle-Geometry' 1 8!
 SystemOrganization addCategory: #'Turtle-Geometry'!
 
 
@@ -22,6 +22,16 @@ Object subclass: #Turtle
 	category: 'Turtle-Geometry'!
 !classDefinition: 'Turtle class' category: #'Turtle-Geometry'!
 Turtle class
+	instanceVariableNames: ''!
+
+!classDefinition: #Pen category: #'Turtle-Geometry'!
+Turtle subclass: #Pen
+	instanceVariableNames: 'canvas down width color'
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'Turtle-Geometry'!
+!classDefinition: 'Pen class' category: #'Turtle-Geometry'!
+Pen class
 	instanceVariableNames: ''!
 
 
@@ -78,3 +88,64 @@ direction
 !Turtle methodsFor: 'accessing' stamp: 'DF 2/17/2020 14:56:15'!
 location
 	^ location! !
+
+!Pen methodsFor: 'accessing' stamp: 'DF 2/19/2020 21:36:16'!
+canvas: aCanvas
+	canvas _ aCanvas! !
+
+!Pen methodsFor: 'accessing' stamp: 'DF 2/19/2020 21:40:51'!
+color: aColor
+	color := aColor
+	! !
+
+!Pen methodsFor: 'accessing' stamp: 'DF 2/19/2020 21:41:02'!
+width: aNumber
+	width _ aNumber! !
+
+!Pen methodsFor: 'pen operations' stamp: 'DF 2/19/2020 21:37:50'!
+down
+
+	down _ true! !
+
+!Pen methodsFor: 'pen operations' stamp: 'DF 2/19/2020 21:42:25'!
+go: distance
+
+	| old |
+	
+	old _ self location.
+	
+	super go: distance.
+	
+	down ifFalse:[^ self].
+	
+	canvas line: old to: self location width: width color: color ! !
+
+!Pen methodsFor: 'pen operations' stamp: 'DF 2/19/2020 21:37:20'!
+up
+
+	down _ false! !
+
+!Pen methodsFor: 'initialization' stamp: 'DF 2/19/2020 21:42:48'!
+initialize
+
+	super initialize.
+	
+	color _ Color black.
+	
+	width _ 1.
+	
+	self up.! !
+
+!Pen class methodsFor: 'as yet unclassified' stamp: 'DF 2/19/2020 21:43:36'!
+onCanvas: aCanvas
+
+	^Pen new canvas: aCanvas.
+	
+	! !
+
+!Pen class methodsFor: 'as yet unclassified' stamp: 'DF 2/19/2020 21:53:28'!
+onDisplay
+
+	^self onCanvas: Display getCanvas
+	
+	! !

@@ -1,6 +1,6 @@
-'From Cuis 5.0 [latest update: #4024] on 20 February 2020 at 11:42:59 am'!
+'From Cuis 5.0 [latest update: #4024] on 20 February 2020 at 5:15:53 pm'!
 'Description Turtle geometry operations on a two dimensional plane'!
-!provides: 'Turtle-Geometry' 1 8!
+!provides: 'Turtle-Geometry' 1 10!
 SystemOrganization addCategory: #'Turtle-Geometry'!
 
 
@@ -101,6 +101,10 @@ color: aColor
 !Pen methodsFor: 'accessing' stamp: 'DF 2/19/2020 21:41:02'!
 width: aNumber
 	width _ aNumber! !
+
+!Pen methodsFor: 'pen operations' stamp: 'DF 2/20/2020 17:06:09'!
+dot
+	canvas ellipseCenterX: location x y: location y rx: width ry: width borderWidth: 0 borderColor: Color black fillColor: color! !
 
 !Pen methodsFor: 'pen operations' stamp: 'DF 2/19/2020 21:37:50'!
 down

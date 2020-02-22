@@ -1,6 +1,6 @@
-'From Cuis 5.0 [latest update: #4024] on 20 February 2020 at 5:15:53 pm'!
+'From Cuis 5.0 [latest update: #4024] on 22 February 2020 at 9:08:27 pm'!
 'Description Turtle geometry operations on a two dimensional plane'!
-!provides: 'Turtle-Geometry' 1 10!
+!provides: 'Turtle-Geometry' 1 12!
 SystemOrganization addCategory: #'Turtle-Geometry'!
 
 
@@ -34,6 +34,16 @@ Turtle subclass: #Pen
 Pen class
 	instanceVariableNames: ''!
 
+!classDefinition: #TurtleTrip category: #'Turtle-Geometry'!
+Object subclass: #TurtleTrip
+	instanceVariableNames: 'headings origin heading directions'
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'Turtle-Geometry'!
+!classDefinition: 'TurtleTrip class' category: #'Turtle-Geometry'!
+TurtleTrip class
+	instanceVariableNames: ''!
+
 
 !Turtle commentStamp: '<historical>' prior: 0!
 I am a turtle that moves on a two dimensional plane. I have a location point and a movement vector. !
@@ -65,6 +75,11 @@ home
 
 	heading := 0@1.
 	location := 0@0.! !
+
+!Turtle methodsFor: 'moving' stamp: 'DF 2/20/2020 18:30:39'!
+north
+
+	heading _ 0! !
 
 !Turtle methodsFor: 'moving' stamp: 'DF 2/17/2020 14:57:52'!
 scale: aNumber
@@ -153,3 +168,29 @@ onDisplay
 	^self onCanvas: Display getCanvas
 	
 	! !
+
+!TurtleTrip methodsFor: 'as yet unclassified' stamp: 'DF 2/20/2020 18:30:12'!
+initialize
+
+	directions _ OrderedCollection new! !
+
+!TurtleTrip methodsFor: 'as yet unclassified' stamp: 'DF 2/20/2020 18:30:16'!
+turn: degrees go: distance
+
+	directions add: (Point r: distance degrees: degrees)! !
+
+!TurtleTrip methodsFor: 'as yet unclassified' stamp: 'DF 2/22/2020 19:24:20'!
+waypoints: aTurtle
+	
+	^directions collect: [:each | aTurtle turn: each theta radiansToDegrees ; go: each r ; location ]! !
+
+!Collection methodsFor: '*Turtle-Geometry' stamp: 'DF 2/22/2020 21:06:48'!
+bbox
+
+	| min max |
+	
+	min _ self min.
+	
+	max _ self max.
+	
+	^min corner: max! !

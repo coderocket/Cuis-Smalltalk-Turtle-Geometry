@@ -1,8 +1,38 @@
-'From Cuis 5.0 [latest update: #4024] on 22 February 2020 at 9:08:27 pm'!
+'From Cuis 5.0 [latest update: #4024] on 23 February 2020 at 9:41:38 pm'!
 'Description Turtle geometry operations on a two dimensional plane'!
 !provides: 'Turtle-Geometry' 1 12!
 SystemOrganization addCategory: #'Turtle-Geometry'!
 
+
+!classDefinition: #TestConvexPolygon category: #'Turtle-Geometry'!
+TestCase subclass: #TestConvexPolygon
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'Turtle-Geometry'!
+!classDefinition: 'TestConvexPolygon class' category: #'Turtle-Geometry'!
+TestConvexPolygon class
+	instanceVariableNames: ''!
+
+!classDefinition: #TestLineSegmentIntersection category: #'Turtle-Geometry'!
+TestCase subclass: #TestLineSegmentIntersection
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'Turtle-Geometry'!
+!classDefinition: 'TestLineSegmentIntersection class' category: #'Turtle-Geometry'!
+TestLineSegmentIntersection class
+	instanceVariableNames: ''!
+
+!classDefinition: #TestMatrix2D category: #'Turtle-Geometry'!
+TestCase subclass: #TestMatrix2D
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'Turtle-Geometry'!
+!classDefinition: 'TestMatrix2D class' category: #'Turtle-Geometry'!
+TestMatrix2D class
+	instanceVariableNames: ''!
 
 !classDefinition: #TestTurtle category: #'Turtle-Geometry'!
 TestCase subclass: #TestTurtle
@@ -12,6 +42,26 @@ TestCase subclass: #TestTurtle
 	category: 'Turtle-Geometry'!
 !classDefinition: 'TestTurtle class' category: #'Turtle-Geometry'!
 TestTurtle class
+	instanceVariableNames: ''!
+
+!classDefinition: #ConvexPolygon category: #'Turtle-Geometry'!
+Object subclass: #ConvexPolygon
+	instanceVariableNames: 'vertices'
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'Turtle-Geometry'!
+!classDefinition: 'ConvexPolygon class' category: #'Turtle-Geometry'!
+ConvexPolygon class
+	instanceVariableNames: ''!
+
+!classDefinition: #Matrix2D category: #'Turtle-Geometry'!
+Object subclass: #Matrix2D
+	instanceVariableNames: 'a b c d'
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'Turtle-Geometry'!
+!classDefinition: 'Matrix2D class' category: #'Turtle-Geometry'!
+Matrix2D class
 	instanceVariableNames: ''!
 
 !classDefinition: #Turtle category: #'Turtle-Geometry'!
@@ -48,6 +98,131 @@ TurtleTrip class
 !Turtle commentStamp: '<historical>' prior: 0!
 I am a turtle that moves on a two dimensional plane. I have a location point and a movement vector. !
 
+!TestConvexPolygon methodsFor: 'tests' stamp: 'DavidFaitelson 1/22/2020 15:02'!
+testIntersecting
+
+	| aTriangle aSquare |
+	
+	aTriangle := ConvexPolygon new.
+	
+	aTriangle addVertex: 1@1 ; addVertex: 2@2; addVertex: 1@2; close.
+	
+	aSquare := ConvexPolygon new.
+	
+	aSquare addVertex: 1.5@1.5 ; addVertex: 3@1; addVertex: 3@0; addVertex: 2@0; close.
+	
+	self assert: (aTriangle intersects: aSquare).
+
+	self assert: (aSquare intersects: aTriangle).
+	! !
+
+!TestConvexPolygon methodsFor: 'tests' stamp: 'DavidFaitelson 2/6/2020 13:25'!
+testMerge
+
+	| a b c e |
+	
+	a := ConvexPolygon new.
+	
+	a addVertex: 1@1 ; addVertex: 2@2; addVertex: 1@2; close.
+	
+	b := ConvexPolygon new.
+	
+	b addVertex: 2@3 ; addVertex: 3@3; addVertex: 3@2; close.
+
+	c := a convexMerge: b.
+	
+	e := ConvexPolygon new.
+	
+	e addVertex: 1@1; addVertex: 3@2; addVertex: 3@3; addVertex: 2@3; addVertex: 1@2; close.
+	
+	self assert: e vertices = c vertices
+	
+! !
+
+!TestConvexPolygon methodsFor: 'tests' stamp: 'DF 2/23/2020 21:23:46'!
+testMergeRectangle
+
+	| a b c |
+	
+	a := ConvexPolygon new.
+	
+	a addVertex: 1@1 ; addVertex: 3@1; addVertex: 3@3; addVertex: 1@3; close.
+	
+	b := ConvexPolygon new.
+	
+	b addVertex: 2@2 ; addVertex: 4@2; addVertex: 4@4; addVertex: 2@4; close.
+
+	c := a convexMerge: b.
+	
+	self assert: { 1@1 . 3@1 . 4@2. 4@4. 2@4. 1@3 . 1@1 } asOrderedCollection equals: c vertices 
+	
+! !
+
+!TestConvexPolygon methodsFor: 'tests' stamp: 'DavidFaitelson 1/22/2020 14:58'!
+testNotIntersecting
+
+	| aTriangle aSquare |
+	
+	aTriangle := ConvexPolygon new.
+	
+	aTriangle addVertex: 1@1 ; addVertex: 2@2; addVertex: 1@2; close.
+	
+	aSquare := ConvexPolygon new.
+	
+	aSquare addVertex: 2@1 ; addVertex: 3@1; addVertex: 3@0; addVertex: 2@0; close.
+	
+	self assert: (aTriangle intersects: aSquare) not.
+
+	self assert: (aSquare intersects: aTriangle) not.
+	! !
+
+!TestConvexPolygon methodsFor: 'tests' stamp: 'DF 2/23/2020 18:27:23'!
+testProjection
+
+	| aTriangle xs |
+	
+	aTriangle := ConvexPolygon new.
+	
+	aTriangle addVertex: 1@1 ; addVertex: 2@2; addVertex: 1@2; close.
+	
+	xs := aTriangle projectOn: ((2@2) - (1@1)) normal.
+	
+	self assert: (xs at:1) isCloseTo: 0.
+	self assert: (xs at:2) isCloseTo: 0.
+	self assert: (xs at:3) isCloseTo: 2.0 sqrt / 2.
+	! !
+
+!TestLineSegmentIntersection methodsFor: 'as yet unclassified' stamp: 'DF 2/23/2020 17:41:53'!
+test
+
+	| p q u v ts |
+	
+	p _ 2@1.
+	q _ 2@3.
+	
+	u _ 1@2.
+	v _ 4@2.
+	
+	ts _ p to:q intersection: u to: v.
+	
+	self assert: 1/2 equals: (ts x).
+	
+	self assert: 1/3 equals: (ts y).! !
+
+!TestMatrix2D methodsFor: 'as yet unclassified' stamp: 'DF 2/23/2020 16:27:47'!
+testIdentity
+
+	self assert: Matrix2D identity * (2@3) equals: 2@3! !
+
+!TestMatrix2D methodsFor: 'as yet unclassified' stamp: 'DF 2/23/2020 17:31:10'!
+testInverse
+
+	| aMatrix |
+	
+	aMatrix _ Matrix2D new a: 6 ; b: 4 ; c: 2 ; d: 2.
+	
+	self assert: aMatrix inverse equals: (Matrix2D new a: 1/2 ; b: -1; c: -1/2; d: 3/2).! !
+
 !TestTurtle methodsFor: 'as yet unclassified' stamp: 'DF 2/17/2020 15:18:19'!
 test
 	| aTurtle origin |
@@ -59,6 +234,152 @@ test
 	aTurtle go: 1; turn:90; go:1; turn:90; go:1; turn:90; go:1; turn:90.
 	
 	self assert: (origin - aTurtle location) r < 1e-12.! !
+
+!ConvexPolygon methodsFor: 'accessing' stamp: 'DavidFaitelson 1/22/2020 14:21'!
+edges 
+
+	^vertices overlappingPairsCollect: [ :first :second | first - second ]! !
+
+!ConvexPolygon methodsFor: 'point functions' stamp: 'DavidFaitelson 1/22/2020 14:22'!
+projectOn: aPoint
+
+	^vertices collect:[:each | each projectOn: aPoint ]
+	! !
+
+!ConvexPolygon methodsFor: 'initialization' stamp: 'DavidFaitelson 1/22/2020 14:03'!
+addVertex: aPoint
+	vertices add: aPoint
+	! !
+
+!ConvexPolygon methodsFor: 'initialization' stamp: 'DavidFaitelson 1/22/2020 14:20'!
+close
+	vertices add: vertices first! !
+
+!ConvexPolygon methodsFor: 'initialization' stamp: 'DavidFaitelson 1/22/2020 14:02'!
+initialize
+	vertices := OrderedCollection new! !
+
+!ConvexPolygon methodsFor: 'initialization' stamp: 'DavidFaitelson 1/22/2020 14:58'!
+intersects: aConvexPolygon
+
+	^(self mayIntersect: aConvexPolygon) and:[aConvexPolygon mayIntersect: self]! !
+
+!ConvexPolygon methodsFor: 'initialization' stamp: 'DavidFaitelson 1/22/2020 14:57'!
+mayIntersect: aConvexPolygon
+
+	^self edges allSatisfy: [ :each | | ps qs n |
+		n := each normal.
+		ps := self projectOn: n.
+		qs := aConvexPolygon projectOn: n.
+		(ps max >= qs min) and: [ps min <= qs max]  ] ! !
+
+!ConvexPolygon methodsFor: 'as yet unclassified' stamp: 'DavidFaitelson 2/6/2020 13:19'!
+convexMerge: aConvexPolygon
+
+	| p vs |
+	
+	p := self class new.
+	
+	vs := Set new.
+	
+	vs addAll: vertices.
+	vs addAll: aConvexPolygon vertices.
+	
+	vs asOrderedCollection convexHull do:[:each | p addVertex: each].
+
+	p close.
+	
+	^p! !
+
+!ConvexPolygon methodsFor: 'as yet unclassified' stamp: 'DavidFaitelson 2/6/2020 13:23'!
+vertices
+	^ vertices! !
+
+!Matrix2D methodsFor: 'as yet unclassified' stamp: 'DF 2/23/2020 16:27:27'!
+* aPoint
+
+	^ ((a * (aPoint x)) + (b * (aPoint y))) @ ((c * (aPoint x)) + (d * (aPoint y)))! !
+
+!Matrix2D methodsFor: 'as yet unclassified' stamp: 'DF 2/23/2020 16:20:51'!
+/ aNumber 
+
+	^Matrix2D new a: a / aNumber ; b: b / aNumber ; c: c / aNumber ; d: d / aNumber! !
+
+!Matrix2D methodsFor: 'as yet unclassified' stamp: 'DF 2/23/2020 17:26:28'!
+= aMatrix2D
+
+	self == aMatrix2D ifTrue:[^true].
+	
+	self species == aMatrix2D species ifFalse:[^false].
+	
+	^a = aMatrix2D a and:[b = aMatrix2D b] and:[c = aMatrix2D c] and:[d = aMatrix2D d].! !
+
+!Matrix2D methodsFor: 'as yet unclassified' stamp: 'DF 2/23/2020 16:15:05'!
+a
+	^a
+	! !
+
+!Matrix2D methodsFor: 'as yet unclassified' stamp: 'DF 2/23/2020 16:14:49'!
+a: aNumber
+	a _ aNumber! !
+
+!Matrix2D methodsFor: 'as yet unclassified' stamp: 'DF 2/23/2020 17:40:26'!
+ac: aPoint
+
+	a _ aPoint x.
+	c _ aPoint y.! !
+
+!Matrix2D methodsFor: 'as yet unclassified' stamp: 'DF 2/23/2020 16:18:36'!
+adj
+
+	^Matrix2D new a: d ; b: b negated ; c: c negated ; d: a! !
+
+!Matrix2D methodsFor: 'as yet unclassified' stamp: 'DF 2/23/2020 16:15:08'!
+b
+	^b
+	! !
+
+!Matrix2D methodsFor: 'as yet unclassified' stamp: 'DF 2/23/2020 16:14:52'!
+b: aNumber
+	b _ aNumber! !
+
+!Matrix2D methodsFor: 'as yet unclassified' stamp: 'DF 2/23/2020 16:19:28'!
+bd: aPoint
+	b _ aPoint x.
+	d _ aPoint y! !
+
+!Matrix2D methodsFor: 'as yet unclassified' stamp: 'DF 2/23/2020 16:15:11'!
+c
+	^c
+	! !
+
+!Matrix2D methodsFor: 'as yet unclassified' stamp: 'DF 2/23/2020 16:14:55'!
+c: aNumber
+	c _ aNumber! !
+
+!Matrix2D methodsFor: 'as yet unclassified' stamp: 'DF 2/23/2020 16:15:14'!
+d
+	^d
+	! !
+
+!Matrix2D methodsFor: 'as yet unclassified' stamp: 'DF 2/23/2020 16:14:58'!
+d: aNumber
+	d _ aNumber! !
+
+!Matrix2D methodsFor: 'as yet unclassified' stamp: 'DF 2/23/2020 16:15:40'!
+determinant
+
+	^ (a * d) - (b * c)! !
+
+!Matrix2D methodsFor: 'as yet unclassified' stamp: 'DF 2/23/2020 16:20:11'!
+inverse
+
+	^ self adj / self determinant! !
+
+!Matrix2D class methodsFor: 'as yet unclassified' stamp: 'DF 2/23/2020 16:24:40'!
+identity
+
+	^Matrix2D new a:1 ; b:0 ; c:0; d:1! !
 
 !Turtle methodsFor: 'moving' stamp: 'DF 2/17/2020 14:50:17'!
 go: distance
@@ -184,13 +505,75 @@ waypoints: aTurtle
 	
 	^directions collect: [:each | aTurtle turn: each theta radiansToDegrees ; go: each r ; location ]! !
 
-!Collection methodsFor: '*Turtle-Geometry' stamp: 'DF 2/22/2020 21:06:48'!
-bbox
+!Collection methodsFor: '*Turtle-Geometry' stamp: 'DF 2/23/2020 21:40:45'!
+convexHull
 
-	| min max |
+	| start points hull k head a b |
 	
-	min _ self min.
+	start := self inject: self anyOne into: [ :min :each | (min before: each) ifTrue:[min] ifFalse:[each] ].
 	
-	max _ self max.
+	points := self sorted: [ :p :q |  
+		a := (p - start) angle. 
+		b := (q - start) angle.
+		a < b or:[ a = b and: [ p x <= q x ] ] ].
 	
-	^min corner: max! !
+	hull := OrderedCollection new.
+	
+	hull add: (points at:1).
+	
+	head := points at:2.
+	
+	k := 3.
+	
+	[k <= points size]
+		whileTrue:[ 
+			(head - hull last sideOf: (points at:k) - hull last) = #right 
+				ifFalse:[ hull add: head. head := (points at:k). k := k + 1 ]
+				ifTrue:[ head := hull last. hull removeLast. ]. 
+			].
+		
+	hull add:head.
+	
+	^hull! !
+
+!SequenceableCollection methodsFor: '*Turtle-Geometry'!
+overlappingPairsCollect: aBlock 
+	"Answer the result of evaluating aBlock with all of the overlapping pairs of my elements."
+	| retval |
+	retval := self species ofSize: self size - 1.
+	1 to: self size - 1
+		do: [:i | retval at: i put: (aBlock value: (self at: i) value: (self at: i + 1)) ].
+	^retval! !
+
+!Point methodsFor: '*Turtle-Geometry'!
+angle
+	"Answer the angle in radians between the vectors represented by the receiver and (1, 0) from the origin."
+
+	^ self y arcTan: self x! !
+
+!Point methodsFor: '*Turtle-Geometry' stamp: 'DF 2/23/2020 21:38:04'!
+before: aPoint
+
+	^self y < aPoint y or:[ self y = aPoint y and:[ self x < aPoint x ] ]! !
+
+!Point methodsFor: '*Turtle-Geometry' stamp: 'DF 2/20/2020 11:45:20'!
+projectOn: aPoint
+
+	^self dotProduct: aPoint normalized! !
+
+!Point methodsFor: '*Turtle-Geometry' stamp: 'DF 2/23/2020 17:44:55'!
+to: end1 intersection: start2 to: end2 
+
+	| aMatrix t u v w |
+	
+	u _ self - end1.
+	
+	v _ end2 - start2.
+
+	w _ self - start2.
+		
+	aMatrix _ Matrix2D new ac: u ; bd: v.
+	
+	t _ aMatrix inverse * w.
+	
+	^t! !

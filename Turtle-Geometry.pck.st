@@ -1,6 +1,6 @@
-'From Cuis 5.0 [latest update: #4024] on 23 February 2020 at 9:41:38 pm'!
+'From Cuis 5.0 [latest update: #4024] on 26 February 2020 at 12:25:38 am'!
 'Description Turtle geometry operations on a two dimensional plane'!
-!provides: 'Turtle-Geometry' 1 12!
+!provides: 'Turtle-Geometry' 1 13!
 SystemOrganization addCategory: #'Turtle-Geometry'!
 
 
@@ -98,6 +98,31 @@ TurtleTrip class
 !Turtle commentStamp: '<historical>' prior: 0!
 I am a turtle that moves on a two dimensional plane. I have a location point and a movement vector. !
 
+!TestConvexPolygon methodsFor: 'tests' stamp: 'DF 2/24/2020 14:50:57'!
+testArea
+
+	| r |
+	
+	r _ ConvexPolygon new.
+	
+	r addVertex: 1@1 ; addVertex: 3@1; addVertex: 3@4; addVertex: 1@4; close.
+	
+	
+	self assert: 6 equals: r area! !
+
+!TestConvexPolygon methodsFor: 'tests' stamp: 'DF 2/24/2020 13:46:41'!
+testContains
+
+	| r |
+	
+	r _ ConvexPolygon new.
+	
+	r addVertex: 1@1 ; addVertex: 3@1; addVertex: 3@4; addVertex: 1@4; close.
+	
+	self assert: (r contains: 2@2).
+	
+	self assert: (r contains: 4@2) not.! !
+
 !TestConvexPolygon methodsFor: 'tests' stamp: 'DavidFaitelson 1/22/2020 15:02'!
 testIntersecting
 
@@ -115,6 +140,42 @@ testIntersecting
 
 	self assert: (aSquare intersects: aTriangle).
 	! !
+
+!TestConvexPolygon methodsFor: 'tests' stamp: 'DF 2/24/2020 13:23:47'!
+testIntersectionWithLineSegment
+
+	| aTriangle pts |
+	
+	aTriangle _ ConvexPolygon new.
+	
+	aTriangle addVertex: 1@1 ; addVertex: 2@2; addVertex: 1@2; close.
+
+	pts _ aTriangle intersect: 3@0 to: 0@3.
+	
+	self assert: 2 equals: pts size.
+	
+	self assert: (pts includes: (3/2)@(3/2)).
+	
+	self assert: (pts includes: 1@2).! !
+
+!TestConvexPolygon methodsFor: 'tests' stamp: 'DF 2/24/2020 13:59:56'!
+testIntersectionWithPolygon
+
+	| r1 r2 p r |
+	
+	r1 _ ConvexPolygon new.
+	
+	r1 addVertex: 1@1 ; addVertex: 3@1; addVertex: 3@4; addVertex: 1@4; close.
+
+	r2 _ ConvexPolygon new.
+	
+	r2 addVertex: 2@2 ; addVertex: 5@2; addVertex: 5@3; addVertex: 2@3; close.
+
+	p _ r1 intersect: r2.
+
+	r _ ConvexPolygon from: (OrderedCollection with: 2@2 with: 3@2 with: 3@3 with: 2@3).
+	
+	self assert: r equals: p.! !
 
 !TestConvexPolygon methodsFor: 'tests' stamp: 'DavidFaitelson 2/6/2020 13:25'!
 testMerge
@@ -192,7 +253,7 @@ testProjection
 	self assert: (xs at:3) isCloseTo: 2.0 sqrt / 2.
 	! !
 
-!TestLineSegmentIntersection methodsFor: 'as yet unclassified' stamp: 'DF 2/23/2020 17:41:53'!
+!TestLineSegmentIntersection methodsFor: 'as yet unclassified' stamp: 'DF 2/24/2020 13:11:57'!
 test
 
 	| p q u v ts |
@@ -204,10 +265,27 @@ test
 	v _ 4@2.
 	
 	ts _ p to:q intersection: u to: v.
+
+	self assert: ts size equals:1.
+		
+	self assert: 2@2 equals: (ts first).
+! !
+
+!TestLineSegmentIntersection methodsFor: 'as yet unclassified' stamp: 'DF 2/24/2020 13:12:37'!
+testParallel
+
+	| p q u v ts |
 	
-	self assert: 1/2 equals: (ts x).
+	p _ 0@0.
+	q _ 1@0.
 	
-	self assert: 1/3 equals: (ts y).! !
+	u _ 0@2.
+	v _ 1@2.
+	
+	ts _ p to:q intersection: u to: v.
+
+	self assert: ts size equals:0.
+! !
 
 !TestMatrix2D methodsFor: 'as yet unclassified' stamp: 'DF 2/23/2020 16:27:47'!
 testIdentity
@@ -235,45 +313,32 @@ test
 	
 	self assert: (origin - aTurtle location) r < 1e-12.! !
 
+!ConvexPolygon methodsFor: 'accessing' stamp: 'DF 2/24/2020 14:52:16'!
+area
+
+	| c rs |
+	c _ self centroid.
+	
+	rs _ vertices overlappingPairsCollect:[:p :q | p - c crossProduct: q - c ].
+	
+	^ rs sum / 2! !
+
+!ConvexPolygon methodsFor: 'accessing' stamp: 'DF 2/24/2020 14:23:06'!
+centroid
+
+	^vertices mean
+	! !
+
 !ConvexPolygon methodsFor: 'accessing' stamp: 'DavidFaitelson 1/22/2020 14:21'!
 edges 
 
 	^vertices overlappingPairsCollect: [ :first :second | first - second ]! !
 
-!ConvexPolygon methodsFor: 'point functions' stamp: 'DavidFaitelson 1/22/2020 14:22'!
-projectOn: aPoint
+!ConvexPolygon methodsFor: 'accessing' stamp: 'DavidFaitelson 2/6/2020 13:23'!
+vertices
+	^ vertices! !
 
-	^vertices collect:[:each | each projectOn: aPoint ]
-	! !
-
-!ConvexPolygon methodsFor: 'initialization' stamp: 'DavidFaitelson 1/22/2020 14:03'!
-addVertex: aPoint
-	vertices add: aPoint
-	! !
-
-!ConvexPolygon methodsFor: 'initialization' stamp: 'DavidFaitelson 1/22/2020 14:20'!
-close
-	vertices add: vertices first! !
-
-!ConvexPolygon methodsFor: 'initialization' stamp: 'DavidFaitelson 1/22/2020 14:02'!
-initialize
-	vertices := OrderedCollection new! !
-
-!ConvexPolygon methodsFor: 'initialization' stamp: 'DavidFaitelson 1/22/2020 14:58'!
-intersects: aConvexPolygon
-
-	^(self mayIntersect: aConvexPolygon) and:[aConvexPolygon mayIntersect: self]! !
-
-!ConvexPolygon methodsFor: 'initialization' stamp: 'DavidFaitelson 1/22/2020 14:57'!
-mayIntersect: aConvexPolygon
-
-	^self edges allSatisfy: [ :each | | ps qs n |
-		n := each normal.
-		ps := self projectOn: n.
-		qs := aConvexPolygon projectOn: n.
-		(ps max >= qs min) and: [ps min <= qs max]  ] ! !
-
-!ConvexPolygon methodsFor: 'as yet unclassified' stamp: 'DavidFaitelson 2/6/2020 13:19'!
+!ConvexPolygon methodsFor: 'polygon operations' stamp: 'DavidFaitelson 2/6/2020 13:19'!
 convexMerge: aConvexPolygon
 
 	| p vs |
@@ -291,9 +356,132 @@ convexMerge: aConvexPolygon
 	
 	^p! !
 
-!ConvexPolygon methodsFor: 'as yet unclassified' stamp: 'DavidFaitelson 2/6/2020 13:23'!
-vertices
-	^ vertices! !
+!ConvexPolygon methodsFor: 'polygon operations' stamp: 'DF 2/24/2020 13:58:45'!
+intersect: aConvexPolygon
+
+	| pts |
+	
+	pts _ vertices overlappingPairsCollect: [ :start :end | aConvexPolygon intersect: start to: end ].
+	
+	pts _ pts inject: Set new into: [:acc :each | acc addAll: each. acc ].
+	
+	pts addAll: (vertices select:[:each | aConvexPolygon contains: each ]).
+	
+	pts addAll: ( aConvexPolygon vertices select:[:each | self contains: each]).
+	
+	^ConvexPolygon from: pts convexHull
+	! !
+
+!ConvexPolygon methodsFor: 'polygon operations' stamp: 'DavidFaitelson 1/22/2020 14:22'!
+projectOn: aPoint
+
+	^vertices collect:[:each | each projectOn: aPoint ]
+	! !
+
+!ConvexPolygon methodsFor: 'private' stamp: 'DF 2/24/2020 13:24:46'!
+intersect: start2 to: end2
+
+	| pts |
+	
+	pts _ vertices overlappingPairsCollect:[:start1 :end1 | start1 to: end1 intersection: start2 to: end2 ].
+	
+	^ pts inject: Set new into: [:acc :each | acc addAll: each. acc ].! !
+
+!ConvexPolygon methodsFor: 'private' stamp: 'DavidFaitelson 1/22/2020 14:57'!
+mayIntersect: aConvexPolygon
+
+	^self edges allSatisfy: [ :each | | ps qs n |
+		n := each normal.
+		ps := self projectOn: n.
+		qs := aConvexPolygon projectOn: n.
+		(ps max >= qs min) and: [ps min <= qs max]  ] ! !
+
+!ConvexPolygon methodsFor: 'initialization' stamp: 'DavidFaitelson 1/22/2020 14:02'!
+initialize
+	vertices := OrderedCollection new! !
+
+!ConvexPolygon methodsFor: 'comparing' stamp: 'DF 2/24/2020 14:01:17'!
+= aConvexPolygon
+
+	self == aConvexPolygon ifTrue:[^true].
+	
+	self species == aConvexPolygon species ifFalse:[^false].
+	
+	^ self vertices = aConvexPolygon vertices! !
+
+!ConvexPolygon methodsFor: 'adding' stamp: 'DavidFaitelson 1/22/2020 14:03'!
+addVertex: aPoint
+	vertices add: aPoint
+	! !
+
+!ConvexPolygon methodsFor: 'adding' stamp: 'DavidFaitelson 1/22/2020 14:20'!
+close
+	vertices add: vertices first! !
+
+!ConvexPolygon methodsFor: 'testing' stamp: 'DF 2/24/2020 13:46:03'!
+contains: aPoint
+
+	| bs |
+	
+	bs _ vertices overlappingPairsCollect: [ :start :end | start to: end sideOf: aPoint ].
+	
+	^ bs allSatisfy:[:each | each = #left ].! !
+
+!ConvexPolygon methodsFor: 'testing' stamp: 'DavidFaitelson 1/22/2020 14:58'!
+intersects: aConvexPolygon
+
+	^(self mayIntersect: aConvexPolygon) and:[aConvexPolygon mayIntersect: self]! !
+
+!ConvexPolygon methodsFor: 'moment of intertia' stamp: 'DF 2/26/2020 00:09:16'!
+momentOfIntertia: density
+
+	| ms |
+	
+	ms _ vertices overlappingPairsCollect:[:p :q | self triangleMoment: p to: q].
+	
+	^ density * ms sum / 2! !
+
+!ConvexPolygon methodsFor: 'moment of intertia' stamp: 'DF 2/26/2020 00:21:01'!
+triangleMoment: p to: q
+
+	| c h1 h2 t1 t2 tan1 tan2 w |
+	
+	c _ self centroid.
+	
+	h1 _ (p - c) dotProduct: (q - c) normalized.
+
+	w _ ((p -c) r squared - h1 squared) sqrt.
+	
+	h2 _ (p - q) dotProduct: (c - q) normalized.	
+
+	t1 _ h1 = 0 
+		ifTrue:[ 0 ]
+		ifFalse:[
+			tan1 _ w / h1.
+			(1/2) * (h1 raisedTo:4) * tan1 * ( 1 + ((tan1 raisedTo:2) / 3))].
+
+	t2 _ h2 = 0
+		ifTrue: [ 0 ]
+		ifFalse:[
+			tan2 _ w / h2.
+			(1/6) * (h2 raisedTo:2) * tan2 * (3 * (h2 raisedTo:2) + ((tan2 raisedTo:2) * (h2 raisedTo:2)) - (8*h2*(h1+h2)) + (6 * ((h1 + h2) raisedTo:2)))].
+	
+	^t1 + t2
+	
+! !
+
+!ConvexPolygon class methodsFor: 'as yet unclassified' stamp: 'DF 2/24/2020 13:58:24'!
+from: anOrderedCollection
+
+	| aConvexPolygon |
+	
+	aConvexPolygon _ self new.
+	
+	anOrderedCollection do:[:each | aConvexPolygon addVertex: each ].
+	
+	aConvexPolygon close.
+	
+	^ aConvexPolygon! !
 
 !Matrix2D methodsFor: 'as yet unclassified' stamp: 'DF 2/23/2020 16:27:27'!
 * aPoint
@@ -438,9 +626,9 @@ color: aColor
 width: aNumber
 	width _ aNumber! !
 
-!Pen methodsFor: 'pen operations' stamp: 'DF 2/20/2020 17:06:09'!
+!Pen methodsFor: 'pen operations' stamp: 'DF 2/24/2020 14:22:29'!
 dot
-	canvas ellipseCenterX: location x y: location y rx: width ry: width borderWidth: 0 borderColor: Color black fillColor: color! !
+	canvas ellipseCenterX: location x + (width / 2) y: location y + (width / 2) rx: width ry: width borderWidth: 0 borderColor: Color black fillColor: color! !
 
 !Pen methodsFor: 'pen operations' stamp: 'DF 2/19/2020 21:37:50'!
 down
@@ -488,6 +676,18 @@ onDisplay
 
 	^self onCanvas: Display getCanvas
 	
+	! !
+
+!TurtleTrip methodsFor: 'as yet unclassified' stamp: 'DF 2/23/2020 22:15:42'!
+bbox: aTurtle
+
+	| pts |
+	
+	pts _ self waypoints: aTurtle.
+
+	^ pts min corner: pts max
+	
+
 	! !
 
 !TurtleTrip methodsFor: 'as yet unclassified' stamp: 'DF 2/20/2020 18:30:12'!
@@ -561,10 +761,12 @@ projectOn: aPoint
 
 	^self dotProduct: aPoint normalized! !
 
-!Point methodsFor: '*Turtle-Geometry' stamp: 'DF 2/23/2020 17:44:55'!
+!Point methodsFor: '*Turtle-Geometry' stamp: 'DF 2/24/2020 13:11:22'!
 to: end1 intersection: start2 to: end2 
 
-	| aMatrix t u v w |
+	| aMatrix t u v w ips |
+	
+	ips _ OrderedCollection new.
 	
 	u _ self - end1.
 	
@@ -574,6 +776,11 @@ to: end1 intersection: start2 to: end2
 		
 	aMatrix _ Matrix2D new ac: u ; bd: v.
 	
+	aMatrix determinant = 0 ifTrue:[^ ips].
+		
 	t _ aMatrix inverse * w.
 	
-	^t! !
+	(t >= (0@0) and: [ t <= (1@1) ])
+		ifTrue: [ips add: self - (t x * u)].
+	
+	^ ips! !
